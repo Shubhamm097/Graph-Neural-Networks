@@ -6,37 +6,12 @@ import torch
 from torch_geometric.transforms import NormalizeFeatures
 from torch_geometric.datasets import Planetoid
 
-# nx_g = nx.from_edgelist([(2, 1), (2, 3), (4, 2), (3, 4)])
+# NOTES
+# Dataset Name: CORA, Epochs: 100, Hidden Channels: 16, Test Accuracy Observed: 0.79
+# Dataset Name: CITESEER, Epochs: 100, Hidden Channels: 16, Test Accuracy Observed: 0.71
+# Dataset Name: PUBMED, Epochs: 100, Hidden Channels: 16, Test Accuracy Observed: 0.78
 
-# node_feats = torch.arange(8, dtype=torch.float32).view(1, 4, 2)
-
-# adj_matrix = torch.Tensor([
-#     [[1, 1, 0, 0],
-#      [1, 1, 1, 1],
-#      [0, 1, 1, 1],
-#      [0, 1, 1, 1]],
-# ])
-
-# print("Node features:\n", node_feats)
-# print("\nAdjacency matrix:\n", adj_matrix)
-
-
-dataset = Planetoid(root='PyTorch_Practice_Models', name='Cora', transform=NormalizeFeatures())
-
-data = dataset[0]
-print(f'Dataset: {data}')
-
-hidden_channels = 16
-lr = 0.01
-weight_decay = 5e-4
-
-model = GCN(hidden_channels, dataset)
-print(model)
-
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
-criterion = torch.nn.CrossEntropyLoss()
-
-def train():
+def train(data, model, optimizer, criterion):
     model.train()
     optimizer.zero_grad()
     out = model(data.x, data.edge_index)
@@ -46,7 +21,7 @@ def train():
 
     return loss
 
-def test():
+def test(model, data):
     model.eval()
     out = model(data.x, data.edge_index)
     pred = out.argmax(dim=1)
@@ -55,10 +30,33 @@ def test():
 
     return test_accuracy
 
-for epoch in range(1, 101):
-    loss = train()
-    print(f'Epoch: {epoch}, Loss: {loss:.4f}')
+def get_results():
+
+    dataset_names = ['Cora', 'Citeseer', 'Pubmed']
+
+    for i in range(len(dataset_names)):
+
+        print(f'-------- {dataset_names[i]} --------')
+
+        dataset = Planetoid(root='PyTorch_Practice_Models', name=dataset_names[i], transform=NormalizeFeatures())
+
+        data = dataset[0]
+        print(f'Dataset: {data}')
+
+        hidden_channels = 16
+
+        model = GCN(hidden_channels, dataset)
+        print(model)
+
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+        criterion = torch.nn.CrossEntropyLoss()     
+
+        for epoch in range(1, 101):
+            loss = train(data, model, optimizer, criterion)
+            print(f'Epoch: {epoch}, Loss: {loss:.4f}')
 
 
-test_accuracy = test()
-print(f'Test Accuracy: {test_accuracy:.4f}')
+        test_accuracy = test(model, data)
+        print(f'Test Accuracy: {test_accuracy:.4f}')
+
+get_results()
