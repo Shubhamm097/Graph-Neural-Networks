@@ -1,15 +1,33 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 from GCN import GCN
+from GAT import GAT
 import torch
 
 from torch_geometric.transforms import NormalizeFeatures
 from torch_geometric.datasets import Planetoid
 
-# Observations
-# Dataset Name: CORA, Epochs: 100, Hidden Channels: 16, Test Accuracy Observed: 0.79
-# Dataset Name: CITESEER, Epochs: 100, Hidden Channels: 16, Test Accuracy Observed: 0.71
-# Dataset Name: PUBMED, Epochs: 100, Hidden Channels: 16, Test Accuracy Observed: 0.78
+import argparse
+
+# Usage: python main.py --network_type 'GCN'
+
+# Observations for GCN
+# Experiment Setting: 
+
+#   Number of Epochs: 100
+#   Hidden Channels: 16
+# Dataset Name: CORA, Test Accuracy Observed: 0.79
+# Dataset Name: CITESEER, Test Accuracy Observed: 0.71
+# Dataset Name: PUBMED, Test Accuracy Observed: 0.78
+
+# Observations for GAT
+#  Experiment Setting:
+#   Number of Epochs: 100
+#   Hidden Channels: 16
+#   Number of Heads: 8
+# Dataset Name: CORA, Test Accuracy Observed: 0.80
+# Dataset Name: CITESEER, Test Accuracy Observed: 0.68
+# Dataset Name: PUBMED, Test Accuracy Observed:
 
 def train(data, model, optimizer, criterion):
     model.train()
@@ -30,7 +48,7 @@ def test(model, data):
 
     return test_accuracy
 
-def get_results():
+def get_results(network):
 
     dataset_names = ['Cora', 'Citeseer', 'Pubmed']
 
@@ -38,15 +56,21 @@ def get_results():
 
         print(f'-------- {dataset_names[i]} --------')
 
-        dataset = Planetoid(root='PyTorch_Practice_Models', name=dataset_names[i], transform=NormalizeFeatures())
+        dataset = Planetoid(root='Citation_Datasets', name=dataset_names[i], transform=NormalizeFeatures())
 
         data = dataset[0]
         print(f'Dataset: {data}')
 
         hidden_channels = 16
 
-        model = GCN(hidden_channels, dataset)
-        print(model)
+        if network == 'GCN':
+            model = GCN(hidden_channels, dataset)
+            print(model)
+
+        else:
+            heads = 8
+            model = GAT(dataset, hidden_channels, heads)
+            print(model)
 
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()     
@@ -59,4 +83,13 @@ def get_results():
         test_accuracy = test(model, data)
         print(f'Test Accuracy: {test_accuracy:.4f}')
 
-get_results()
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Specify the network type (GCN or GAT)')
+    parser.add_argument('--network_type', type=str, required=True)
+
+    args = parser.parse_args()
+
+    network_type = args.network_type
+
+    get_results(network_type)
