@@ -6,7 +6,7 @@ import torch
 from torch_geometric.transforms import NormalizeFeatures
 from torch_geometric.datasets import Planetoid
 
-# NOTES
+# Observations
 # Dataset Name: CORA, Epochs: 100, Hidden Channels: 16, Test Accuracy Observed: 0.79
 # Dataset Name: CITESEER, Epochs: 100, Hidden Channels: 16, Test Accuracy Observed: 0.71
 # Dataset Name: PUBMED, Epochs: 100, Hidden Channels: 16, Test Accuracy Observed: 0.78
